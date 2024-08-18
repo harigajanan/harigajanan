@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Drawing and Revision Number</title>
+    <style>
+        .result {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .match {
+            color: green;
+        }
+        .no-match {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Check Drawing and Revision Number</h1>
+    <p id="result" class="result"></p>
+
+    <script>
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            return params.get(name);
+        }
+
+        // Get drawing number and revision number from URL parameters
+        const drawingNumber = getUrlParameter('drawingNumber');
+        const revisionNumber = getUrlParameter('revisionNumber');
+
+        // Check if both parameters are present
+        if (drawingNumber && revisionNumber) {
+            // Google Sheets API URL
+            const sheetUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1BKjlhr0ljBPkCEGR6UKrhmczvXvxnyJViw0YAwCzI2g/values/Sheet1?key=AIzaSyAwatF1_d1Br6uy8OjK04TxjC6PCWS7ZFc';
+
+            fetch(sheetUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const rows = data.values;
+                    let matchFound = false;
+
+                    rows.forEach(row => {
+                        if (row[0] === drawingNumber) {
+                            if (row[1] === revisionNumber) {
+                                matchFound = true;
+                            }
+                        }
+                    });
+
+                    const resultElement = document.getElementById('result');
+                    if (matchFound) {
+                        resultElement.textContent = 'Revision number matches!';
+                        resultElement.className = 'result match';
+                    } else {
+                        resultElement.textContent = 'Revision number does not match!';
+                        resultElement.className = 'result no-match';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            document.getElementById('result').textContent = 'Invalid parameters!';
+            document.getElementById('result').className = 'result no-match';
+        }
+    </script>
+</body>
+</html>
